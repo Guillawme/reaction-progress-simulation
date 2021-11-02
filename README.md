@@ -4,6 +4,11 @@ A very simple simulation to get a feel for how particles from an initially
 homogeneous population desynchronize as they progress through a multi-step
 reaction. Lots of simplifying assumptions, read notebook for details.
 
+## Preview notebook
+
+You can read an HTML export of the notebook
+[here](https://guillawme.github.io/reaction-progress-simulation/reaction-progress-simulation.jl.html).
+
 ## How to run
 
 This requires [Julia](https://julialang.org/) and
