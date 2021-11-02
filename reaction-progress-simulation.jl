@@ -41,7 +41,7 @@ At a given reaction coordinate, the population of particles at any instant $P(t)
 
 $P(t) = P(0) \times e^{-k t}$
 
-In code, this is expressed as:
+Or, translated in code:
 """
 
 # ╔═╡ e73d67f8-3a25-11ec-1046-4bc43bc9b62a
@@ -56,7 +56,7 @@ md"""
 
 # ╔═╡ ba2d1240-8498-4a9a-a7bd-5e0fdb695da0
 md"""
-Rate constant:
+Regime of the rate-limiting step:
 """
 
 # ╔═╡ a9046a5e-9ef5-4acc-a319-31e11ac0a259
@@ -148,11 +148,31 @@ Calculate populations in each reaction coordinate at each time point:
 
 # ╔═╡ 70817d7a-c808-4b34-ac9d-03b2f413cdfa
 begin
+	# Generate a matrix with as many rows as reaction coordinates and
+	# as many columns as time steps, and fill it with zeros.
 	populations = Matrix{Int}(undef, reaction_coordinates, time_steps)
 	populations .= 0
+	
+	# The first element is the total number of particles, all at the same reaction
+	# coordinate and at the initial time step
 	populations[1, 1] = P0
+	
+	# Since the reaction only goes forward, the number of particles at the initial
+	# reaction coordinate is only determined by the rate constant of stepping to the
+	# next reaction coordinate. We can therefore calculate the number of particles
+	# remaining at this initial reaction coordinate at every time step.
 	populations[1, 2:end] .= round.(Int, decay.(populations[1, 1], k, 2:time_steps))
 
+	# For the other reaction coordinates, step through the time steps and reactions
+	# coordinates and update the number of particles with the following rule:
+	# number of particles at this coordinate and time step = 
+	# number of particles already there +
+	# number of particles arriving from the previous coordinate and time step
+	# (the number of particles leaving is only relevant at the NEXT time step, so
+	# subtracting it now actually gives wrong results).
+	# If the number of particles ends up negative, we reset it to zero (a negative
+	# number of particles makes no sense). We also round to the nearest integer (a
+	# fractional particle makes no sense).
 	for t in 2:time_steps
 		for c in 2:reaction_coordinates
 			populations[c, t] = 
@@ -165,16 +185,6 @@ begin
 				)
 		end
 	end
-	
-	#for c in 2:reaction_coordinates, t in 2:time_steps
-		#populations[c, t] = populations[c, t] + 
-			#(populations[c-1, t-1] - populations[c-1, t]) #-
-			#decay(populations[c, t], k, t)
-		#populations[c, t] = max(0, populations[c, t])
-		#populations[c, t+1:end] .= decay.(populations[c, t], k, t+1:time_steps)
-		#populations[c, t] = populations[c, t] -
-		#	decay(populations[c, t], k, t)
-	#end
 	populations
 end
 
@@ -183,7 +193,7 @@ bar(
 	populations[1:end, plot_time],
 	ylim = [0, P0],
 	xlim = [0, reaction_coordinates],
-	title = "Distribution of particles in reaction coordinate space\n at time step $(plot_time)",
+	title = "Distribution of particles in reaction coordinate space\n under $(chosenRateConstant) regime\n at time step $(plot_time)",
 	ylabel = "Number of particles",
 	xlabel = "Reaction coordinate",
 	legend = false
