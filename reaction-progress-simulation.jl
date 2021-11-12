@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.17.0
+# v0.17.1
 
 using Markdown
 using InteractiveUtils
@@ -7,8 +7,9 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
-        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : missing
+        global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
     end
 end
@@ -81,10 +82,6 @@ md"""
 
 # ╔═╡ f187af35-ba56-4a32-b4b0-1c20605c6da6
 PlutoUI.TableOfContents()
-
-# ╔═╡ 082905f3-6e3a-487e-bde0-3f0303539be2
-#@bind k PlutoUI.Slider(0.0001:0.0001:0.01, default = 0.002, show_value = true)
-#k = 0.5
 
 # ╔═╡ b8327ca6-05fe-44ee-ba91-5fbec330fb21
 rateConstants = Dict(
@@ -173,17 +170,15 @@ begin
 	# If the number of particles ends up negative, we reset it to zero (a negative
 	# number of particles makes no sense). We also round to the nearest integer (a
 	# fractional particle makes no sense).
-	for t in 2:time_steps
-		for c in 2:reaction_coordinates
-			populations[c, t] = 
-				max(0,
-					round(Int,
-						  populations[c, t] + 
-						  populations[c-1, t-1] - 
-						  decay(populations[c-1, t-1], k, t)
-					)
+	for t in 2:time_steps, c in 2:reaction_coordinates
+		populations[c, t] = 
+			max(0,
+				round(Int,
+					  populations[c, t] + 
+					  populations[c-1, t-1] - 
+					  decay(populations[c-1, t-1], k, t)
 				)
-		end
+			)
 	end
 	populations
 end
@@ -1123,7 +1118,6 @@ version = "0.9.1+5"
 # ╟─fe2d8b5f-1e54-4744-92d1-408fdc6529a3
 # ╠═7f02e35e-57bd-480f-8776-d17b4965b386
 # ╠═f187af35-ba56-4a32-b4b0-1c20605c6da6
-# ╠═082905f3-6e3a-487e-bde0-3f0303539be2
 # ╠═b8327ca6-05fe-44ee-ba91-5fbec330fb21
 # ╠═906fc195-28f7-4c32-a9c9-0955d674dfb2
 # ╟─37041733-36e1-4afb-88d0-9310ec5da232
